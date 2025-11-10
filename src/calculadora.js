@@ -7,4 +7,4 @@ function sumar(a, b) {
 // Exportamos las funciones que queremos que sean "públicas"
 // para que los tests (y otras partes de la app) puedan usarlas.
 // ¡No olvidar añadir la nueva función aquí!
-module.exports = { sumar };
+module.exports = { sumar, restar };
