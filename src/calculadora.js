@@ -1,6 +1,6 @@
 function sumar(a, b) {
   // Simulación de código simple
-  return a + b;
+  return a + b ;
 }
 
 
