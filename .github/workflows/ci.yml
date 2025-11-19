@@ -1,0 +1,83 @@
+name: CI - CD Pipeline
+
+# 1. DISPARADOR (Trigger)
+# Se ejecuta en Pull Requests a 'main' Y en pushes directos a 'main'
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# 2. JOBS (Tareas)
+# Definimos los "trabajos" que se van a ejecutar
+jobs:
+  
+  #--- JOB 1: TEST (CI) ---
+  # Este job se ejecuta SIEMPRE (en PRs y en push a main)
+  test:
+    name: 1. Test (CI)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Configurar Node.js v24
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24'
+          cache: 'npm'
+      
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar tests
+        run: npm test
+
+  #--- JOB 2: BUILD & PUSH (CD) ---
+  build_and_push:
+    name: 2. Build & Push a GHCR (CD)
+    # Dependencia: Solo se ejecuta si el job 'test' ha terminado con éxito
+    needs: test
+    # Condición: Solo se ejecuta si el evento es un PUSH a la rama 'master'
+    # (Es decir, no se ejecuta en Pull Requests)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Iniciar sesión en GitHub Container Registry (GHCR)
+        # 'secrets.GITHUB_TOKEN' es un token temporal y seguro que GitHub crea para nosotros
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }} # Tu nombre de usuario
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir y Subir la imagen Docker
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true # ¡Importante! Le decimos que suba la imagen
+          # Esta es la etiqueta (tag) que Render espera:
+          # ghcr.io/tu-usuario/tu-repo/mi-servidor-web:latest
+          tags: ghcr.io/${{ github.repository }}/mi-servidor-web:latest 
+
+  #--- JOB 3: DEPLOY (CD) ---
+  deploy:
+    name: 3. Desplegar en Render (CD)
+    # Dependencia: Solo se ejecuta si 'build_and_push' ha terminado con éxito
+    needs: build_and_push
+    # Condición: Solo se ejecuta si es un PUSH a 'master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Lanzar el Deploy Hook de Render
+        # 'secrets.RENDER_DEPLOY_HOOK' es el secreto que creamos en GitHub
+        run: curl "${{ secrets.RENDER_DEPLOY_HOOK }}"
