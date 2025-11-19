@@ -69,7 +69,7 @@ app.get('/dividir', (req, res) => {
 
 // Definimos una ruta "mensaje" (/)
 app.get('/mensaje', (req, res) => {
-  res.send('Este es un mensaje de prueba.');
+  res.send('Este es un mensaje de prueba 2.');
 });
 
 // Ponemos el servidor a "escuchar" en el puerto definido
