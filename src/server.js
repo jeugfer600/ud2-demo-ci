@@ -67,6 +67,11 @@ app.get('/dividir', (req, res) => {
   res.send(`El resultado de dividir ${a} / ${b} es ${resultado}`);
 });
 
+// Definimos una ruta "mensaje" (/)
+app.get('/mensaje', (req, res) => {
+  res.send('Este es un mensaje de prueba.');
+});
+
 // Ponemos el servidor a "escuchar" en el puerto definido
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
