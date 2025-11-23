@@ -17,7 +17,8 @@
   "author": "Tu Nombre/Nombre del Centro",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "morgan": "^1.10.1"
   },
   "devDependencies": {
     "jest": "^29.7.0"

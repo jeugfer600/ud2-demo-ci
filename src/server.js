@@ -1,5 +1,6 @@
 // Importamos la librería Express
 const express = require('express');
+const morgan = require('morgan'); // ¡NUEVO! Librería de logging
 // Importamos nuestras funciones de la calculadora
 const { sumar, restar, multiplicar, dividir } = require('./calculadora');
 
@@ -8,6 +9,20 @@ const app = express();
 // Definimos el puerto. Render nos lo dará en una variable de entorno,
 // si no, usamos el 3000 para local.
 const PORT = process.env.PORT || 3000;
+
+// --- MIDDLEWARES ---
+// Usamos 'morgan' con el formato 'combined' (estándar Apache).
+// Esto registrará automáticamente: IP, fecha, método, URL, estado, user-agent.
+app.use(morgan('combined'));
+
+// --- RUTAS DE MONITORIZACIÓN (Criterio e) ---
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'UP',
+    timestamp: new Date(),
+    uptime: process.uptime() // Segundos que lleva encendido el servidor
+  });
+});
 
 // Definimos una ruta "Home" (/)
 app.get('/', (req, res) => {
